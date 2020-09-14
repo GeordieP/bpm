@@ -16,11 +16,11 @@
       return;
     }
 
-    field = "";
-    count++;
-
     const tmp = (ONE_MINUTE_MS * count) / (now - first);
     bpm = (Math.round(tmp * 100) / 100).toString();
+
+    field = "";
+    count++;
   };
 </script>
 
