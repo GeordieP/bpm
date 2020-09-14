@@ -4,8 +4,8 @@
   let field = "";
   let count = 0;
   let first = 0;
-  let avg = "000.00";
-  $: [avgWhole, avgDec] = avg.split(".");
+  let bpm = "000.00";
+  $: [whole, dec] = bpm.split(".");
 
   const tap = () => {
     const now = Date.now();
@@ -19,9 +19,8 @@
     field = "";
     count++;
 
-    if (count === 0) return;
-    const bpmAvg = (ONE_MINUTE_MS * count) / (now - first);
-    avg = (Math.round(bpmAvg * 100) / 100).toString();
+    const tmp = (ONE_MINUTE_MS * count) / (now - first);
+    bpm = (Math.round(tmp * 100) / 100).toString();
   };
 </script>
 
@@ -70,20 +69,23 @@
 </style>
 
 <main>
-  <h1 class="bpm hStack">
-    <b>{avgWhole}</b>
-    <div class="vStack center">
-      <span class="accent">BPM</span>
-      <span class="dec">.{avgDec || '00'}</span>
+  <div class="vStack">
+    <h1 class="bpm hStack">
+      <b>{whole}</b>
+      <div class="vStack center">
+        <span class="accent">BPM</span>
+        <span class="dec">.{dec || '00'}</span>
+      </div>
+    </h1>
+    <div class="hStack">
+      <input
+        type="text"
+        on:keydown={tap}
+        bind:value={field}
+        placeholder="Tap btns on your keyboard"
+        autofocus />
+      <button on:click={tap}>{count}</button>
     </div>
-  </h1>
-  <div class="hStack">
-    <input
-      type="text"
-      on:keydown={tap}
-      bind:value={field}
-      placeholder="Tap btns on your keyboard"
-      autofocus />
-    <button on:click={tap}>{count}</button>
+    <a href="https://github.com/GeordieP/bpm">src</a>
   </div>
 </main>
