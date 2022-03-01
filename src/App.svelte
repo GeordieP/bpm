@@ -1,15 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  const ONE_MINUTE_MS = 1000 * 60;
 
-  const reset = () => {
-    field = "";
-    count = 0;
-    first = 0;
-    bpm = fmtBPM(0);
-    document.getElementById("tapInputField").focus();
-  };
-  onMount(reset);
+  // UTIL
+  const ONE_MINUTE_MS = 1000 * 60;
 
   const fmtBPM = (bpm: number) => {
     const str = (Math.round(bpm * 100) / 100).toString();
@@ -23,63 +16,87 @@
     };
   };
 
-  const tap = () => {
-    const now = Date.now();
+  // MUTABLE STATE
+  let field = "";
+  let count = 0;
+  let first = 0;
+  let last = 0;
+  let now = 0;
+  let lastDiff = 0;
+  let currentDiff = 0;
+  let bpm = fmtBPM(0);
+
+  // REACTIVE STATE
+  $: pctChanged = currentDiff - lastDiff;
+  $: isActive = count >= 2;
+  $: halftime = fmtBPM(bpm.asFloat / 2);
+  $: doubletime = fmtBPM(bpm.asFloat * 2);
+
+  // ACTIONS
+  const onReset = () => {
+    now = 0;
+    field = "";
+    count = 0;
+    first = 0;
+    currentDiff = 0;
+    bpm = fmtBPM(0);
+    document.getElementById("tapInputField").focus();
+  };
+
+  const onTap = () => {
+    now = Date.now();
 
     if (count === 0) {
       first = now;
+      last = now;
       count++;
+
       return;
     }
 
     const tmp = (ONE_MINUTE_MS * count) / (now - first);
     bpm = fmtBPM(tmp);
 
+    lastDiff = currentDiff;
+    currentDiff = now - last;
+    last = now;
     field = "";
     count++;
-  }; ///tap
+  }; ///onTap
 
-  // STATE
-  let field = "";
-  let count = 0;
-  let first = 0;
-  let bpm = fmtBPM(0);
-
-  $: active = count >= 2;
-  $: halftime = fmtBPM(bpm.asFloat / 2);
-  $: doubletime = fmtBPM(bpm.asFloat * 2);
+  // LIFECYCLE
+  onMount(onReset);
 </script>
 
 <main>
   <div class="vStack gap-sm">
     {#if count == 0}
-      <button on:click={tap} class="accent">tap a key to start</button>
+      <button on:click={onTap} class="accent">tap a key to start</button>
     {:else if count == 1}
-      <button on:click={tap} class="accent">keep tapping</button>
-    {:else}
-      <button on:click={tap} class="txt-dim">{count} taps</button>
-    {/if}
+      <button on:click={onTap} class="accent">keep tapping</button>
+    {:else}<button on:click={onTap} class="txt-dim">{count} taps</button>{/if}
+    <!-- <p>diff {currentDiff} // {pctChanged}%</p> -->
 
     <input
       id="tapInputField"
       type="text"
-      on:keydown={tap}
+      on:keydown={onTap}
       bind:value={field}
       autofocus
     />
-    <button on:click={reset} class:txt-dim={!active} class:accent={active}
-      >RESET</button
-    >
+    <button
+      on:click={onReset}
+      class:txt-dim={!isActive}
+      class:accent={isActive}
+    >RESET</button>
 
     <hr />
 
     <div class="vStack">
-      <table class:txt-dim={!active}>
+      <table class:txt-dim={!isActive}>
         <tr>
           <td>
-            <h1>
-              <span class:accent={active}>BPM</span>
-            </h1>
+            <h1><span class:accent={isActive}>BPM</span></h1>
           </td>
           <td class="text-right">
             <h1>{bpm.whole}<span class="txt-dim">.{bpm.decimal}</span></h1>
@@ -87,9 +104,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class:accent={active}>&divide; 2</span>
-          </td>
+          <td><span class:accent={isActive}>&divide; 2</span></td>
           <td class="text-right">
             <h3>
               {halftime.whole}<span class="txt-dim">.{halftime.decimal}</span>
@@ -98,14 +113,10 @@
         </tr>
 
         <tr>
-          <td>
-            <span class:accent={active}>&times; 2</span>
-          </td>
+          <td><span class:accent={isActive}>&times; 2</span></td>
           <td class="text-right">
             <h3>
-              {doubletime.whole}<span class="txt-dim"
-                >.{doubletime.decimal}</span
-              >
+              {doubletime.whole}<span class="txt-dim">.{doubletime.decimal}</span>
             </h3>
           </td>
         </tr>
@@ -116,8 +127,8 @@
     <a
       href="https://github.com/GeordieP/bpm"
       target="_blank"
-      class:txt-dim={active}>src code</a
-    >
+      class:txt-dim={isActive}
+    >src code</a>
   </div>
 </main>
 
