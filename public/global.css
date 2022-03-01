@@ -68,3 +68,70 @@ button:not(:disabled):active {
 button:focus {
   border-color: #666;
 }
+
+/* TODO: check for dupes below */
+
+button {
+  cursor: pointer;
+}
+
+button,
+input {
+  margin: 0;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid black;
+}
+input {
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(40, 150, 255, 0.3);
+}
+
+h1,
+h3 {
+  margin: 0;
+}
+
+hr {
+  width: 100%;
+  border-color: #333;
+}
+
+/* layout / sizing */
+.hStack {
+  display: flex;
+  flex-direction: row;
+}
+
+.vStack {
+  display: flex;
+  flex-direction: column;
+}
+
+.spaceBetween {
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: 0.2em;
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* theming */
+
+.accent {
+  color: dodgerblue;
+  width: 100%;
+}
+
+.txt-dim {
+  color: rgba(255, 255, 255, 0.3);
+}

@@ -1,16 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  const ONE_MINUTE_MS = 1000 * 60;
+  import Tapper from "./Tapper.svelte";
 
-  const reset = () => {
-    field = "";
-    count = 0;
-    first = 0;
-    bpm = fmtBPM(0);
-    document.getElementById("tapInputField").focus();
-  };
-  onMount(reset);
-
+  // UTIL
   const fmtBPM = (bpm: number) => {
     const str = (Math.round(bpm * 100) / 100).toString();
     const [whole, decimal] = str.split(".");
@@ -23,7 +15,31 @@
     };
   };
 
-  const tap = () => {
+  // CONSTANTS
+  const ONE_MINUTE_MS = 1000 * 60;
+
+  // MUTABLE STATE
+  let field = "";
+  let count = 0;
+  let first = 0;
+  let bpm = fmtBPM(0);
+
+  // REACTIVE STATE
+  $: active = count >= 2;
+  $: halftime = fmtBPM(bpm.asFloat / 2);
+  $: doubletime = fmtBPM(bpm.asFloat * 2);
+
+  // EFFECTS
+  const onReset = () => {
+    field = "";
+    count = 0;
+    first = 0;
+    bpm = fmtBPM(0);
+    document.getElementById("tapInputField").focus();
+  };
+
+  // ACTIONS
+  const onTap = () => {
     const now = Date.now();
 
     if (count === 0) {
@@ -37,39 +53,26 @@
 
     field = "";
     count++;
-  }; ///tap
+  };
 
-  // STATE
-  let field = "";
-  let count = 0;
-  let first = 0;
-  let bpm = fmtBPM(0);
-
-  $: active = count >= 2;
-  $: halftime = fmtBPM(bpm.asFloat / 2);
-  $: doubletime = fmtBPM(bpm.asFloat * 2);
+  // LIFECYCLE
+  onMount(onReset);
 </script>
 
 <main>
   <div class="vStack gap-sm">
     {#if count == 0}
-      <button on:click={tap} class="accent">tap a key to start</button>
+      <button on:click={onTap}>tap a key to start</button>
     {:else if count == 1}
-      <button on:click={tap} class="accent">keep tapping</button>
-    {:else}
-      <button on:click={tap} class="txt-dim">{count} taps</button>
-    {/if}
+      <button on:click={onTap}>keep tapping</button>
+    {:else}<button on:click={onTap} class="txt-dim">{count} taps</button>{/if}
 
-    <input
-      id="tapInputField"
-      type="text"
-      on:keydown={tap}
-      bind:value={field}
-      autofocus
-    />
-    <button on:click={reset} class:txt-dim={!active} class:accent={active}
-      >RESET</button
-    >
+    <Tapper id="tapInputField" on:tap={onTap} bind:value={field} />
+    <button
+      on:click={onReset}
+      class:txt-dim={!active}
+      class:accent={active}
+    >RESET</button>
 
     <hr />
 
@@ -77,9 +80,7 @@
       <table class:txt-dim={!active}>
         <tr>
           <td>
-            <h1>
-              <span class:accent={active}>BPM</span>
-            </h1>
+            <h1><span class:accent={active}>BPM</span></h1>
           </td>
           <td class="text-right">
             <h1>{bpm.whole}<span class="txt-dim">.{bpm.decimal}</span></h1>
@@ -87,9 +88,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class:accent={active}>&divide; 2</span>
-          </td>
+          <td><span class:accent={active}>&divide; 2</span></td>
           <td class="text-right">
             <h3>
               {halftime.whole}<span class="txt-dim">.{halftime.decimal}</span>
@@ -98,14 +97,10 @@
         </tr>
 
         <tr>
-          <td>
-            <span class:accent={active}>&times; 2</span>
-          </td>
+          <td><span class:accent={active}>&times; 2</span></td>
           <td class="text-right">
             <h3>
-              {doubletime.whole}<span class="txt-dim"
-                >.{doubletime.decimal}</span
-              >
+              {doubletime.whole}<span class="txt-dim">.{doubletime.decimal}</span>
             </h3>
           </td>
         </tr>
@@ -116,8 +111,8 @@
     <a
       href="https://github.com/GeordieP/bpm"
       target="_blank"
-      class:txt-dim={active}>src code</a
-    >
+      class:txt-dim={active}
+    >src code</a>
   </div>
 </main>
 
@@ -131,69 +126,5 @@
     width: 100%;
     margin: 0 auto;
     font-size: 2em;
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  button,
-  input {
-    margin: 0;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid black;
-  }
-  input {
-    background-color: rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(40, 150, 255, 0.3);
-  }
-
-  h1,
-  h3 {
-    margin: 0;
-  }
-
-  hr {
-    width: 100%;
-    border-color: #333;
-  }
-
-  /*  */
-  .hStack {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .vStack {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .gap-sm {
-    gap: 0.2em;
-  }
-
-  .center {
-    justify-content: center;
-    align-items: center;
-  }
-
-  .txt-dim {
-    color: rgba(255, 255, 255, 0.3);
-  }
-
-  .spaceBetween {
-    justify-content: space-between;
-  }
-
-  .text-right {
-    text-align: right;
-  }
-
-  /*  */
-  .accent {
-    color: dodgerblue;
-    width: 100%;
   }
 </style>
