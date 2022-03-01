@@ -40,12 +40,19 @@
 
   // ACTIONS
   const onTap = (evt: any) => {
-    spawnBox(evt.currentTarget.value);
+    spawnBox(evt?.currentTarget?.value ?? "");
     dispatch("tap", evt);
   };
 
   // LIFECYCLE
-  onMount(() => {
+
+  onMount(function demoMode() {
+    if (true) return; // Un-comment me
+    const interval = setInterval(onTap, 344.4);
+    return () => clearInterval(interval);
+  });
+
+  onMount(function startRenderLoop() {
     const ctx = canvas.getContext("2d");
     ctx.font = "63px Arial";
     let frame = requestAnimationFrame(loop);
