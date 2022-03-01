@@ -1,29 +1,50 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
-
   const dispatch = createEventDispatcher();
 
+  // PROPS
   export let id;
   export let value;
 
+  // TYPES
   type Transform = { x: number; y: number; w: number; h: number };
   type BoundsCheck = { oob?: boolean };
   type Text = { text: string };
-  type Box = Transform & BoundsCheck & Partial<Text>;
+  type Graphic = { bgColor?: string; opacity?: number };
+  type Box = Transform & BoundsCheck & Partial<Text> & Graphic;
 
-  let root: HTMLDivElement;
+  // CONSTANTS
+  const BOX_W = 30;
+  $: BOX_H = canvas == null ? 30 : canvas.height;
+
+  // MUTABLE STATE
   let canvas: HTMLCanvasElement;
   let boxes: Box[] = [];
 
-  const BOX_SIZE = 30;
+  // REACTIVE STATE
   $: STARTING_POS =
     canvas == null
       ? { x: 0, y: 0 }
-      : { x: canvas.width + BOX_SIZE / 2, y: canvas.height / 2 - BOX_SIZE / 2 };
-  const spawnBox = (text?: string) =>
-    boxes.push({ ...STARTING_POS, w: BOX_SIZE, h: BOX_SIZE, text });
+      : { x: canvas.width + BOX_W / 2, y: canvas.height / 2 - BOX_H / 2 };
 
+  // EFFECTS
+  const spawnBox = (text?: string) =>
+    boxes.push({
+      ...STARTING_POS,
+      w: BOX_W,
+      h: BOX_H,
+      text,
+      opacity: 1,
+    });
+
+  // ACTIONS
+  const onTap = (evt: any) => {
+    spawnBox(evt.currentTarget.value);
+    dispatch("tap", evt);
+  };
+
+  // LIFECYCLE
   onMount(() => {
     const ctx = canvas.getContext("2d");
     ctx.font = "63px Arial";
@@ -31,55 +52,46 @@
     let lastTick = 0;
 
     function loop(tick) {
-      frame = requestAnimationFrame(loop);
-
       const deltaTime = (tick - lastTick) / 1000;
       lastTick = tick;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "white";
 
       if (boxes.length > 0) {
         for (const box of boxes) {
           box.h -= 40 * deltaTime;
           box.y += 20 * deltaTime;
           box.x -= 800 * deltaTime;
+          box.opacity == null ? null : (box.opacity -= 2.8 * deltaTime);
 
-          if (box.x + BOX_SIZE < -BOX_SIZE) {
+          if (box.x + BOX_W < -BOX_W) {
             box.oob = true;
             continue;
           }
 
           // if (box.text) {
-          //   ctx.fillText(box.text, box.x, box.y + 20);
+          // ctx.fillText(box.text, box.x, box.y + 20);
           // } else {
+          ctx.fillStyle = `rgba(255, 255, 255, ${
+            box.opacity == null ? 1 : box.opacity
+          })`;
           ctx.fillRect(box.x, box.y, box.w, box.h);
           // }
         }
 
         boxes = boxes.filter((x) => !x.oob);
       }
+
+      frame = requestAnimationFrame(loop);
     }
 
     return () => {
       cancelAnimationFrame(frame);
     };
   });
-
-  const onTap = (evt: any) => {
-    spawnBox(evt.currentTarget.value);
-    dispatch("tap", evt);
-  };
-
-  // UTIL
-
-  const parseCssPx = (value: string | number) => {
-    console.log(value);
-    return 40 as number;
-  };
 </script>
 
-<div id="tapper-root" class="hStack gap-sm" bind:this={root}>
+<div id="tapper-root" class="hStack gap-sm">
   <canvas bind:this={canvas} width={300} height={100} />
   <input {id} type="text" on:keydown={onTap} bind:value autofocus />
 </div>

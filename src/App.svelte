@@ -1,17 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Tapper from "./Tapper.svelte";
-  const ONE_MINUTE_MS = 1000 * 60;
 
-  const reset = () => {
-    field = "";
-    count = 0;
-    first = 0;
-    bpm = fmtBPM(0);
-    document.getElementById("tapInputField").focus();
-  };
-  onMount(reset);
-
+  // UTIL
   const fmtBPM = (bpm: number) => {
     const str = (Math.round(bpm * 100) / 100).toString();
     const [whole, decimal] = str.split(".");
@@ -24,7 +15,31 @@
     };
   };
 
-  const tap = () => {
+  // CONSTANTS
+  const ONE_MINUTE_MS = 1000 * 60;
+
+  // MUTABLE STATE
+  let field = "";
+  let count = 0;
+  let first = 0;
+  let bpm = fmtBPM(0);
+
+  // REACTIVE STATE
+  $: active = count >= 2;
+  $: halftime = fmtBPM(bpm.asFloat / 2);
+  $: doubletime = fmtBPM(bpm.asFloat * 2);
+
+  // EFFECTS
+  const onReset = () => {
+    field = "";
+    count = 0;
+    first = 0;
+    bpm = fmtBPM(0);
+    document.getElementById("tapInputField").focus();
+  };
+
+  // ACTIONS
+  const onTap = () => {
     const now = Date.now();
 
     if (count === 0) {
@@ -38,32 +53,26 @@
 
     field = "";
     count++;
-  }; ///tap
+  };
 
-  // STATE
-  let field = "";
-  let count = 0;
-  let first = 0;
-  let bpm = fmtBPM(0);
-
-  $: active = count >= 2;
-  $: halftime = fmtBPM(bpm.asFloat / 2);
-  $: doubletime = fmtBPM(bpm.asFloat * 2);
+  // LIFECYCLE
+  onMount(onReset);
 </script>
 
 <main>
   <div class="vStack gap-sm">
     {#if count == 0}
-      <button on:click={tap} class="accent">tap a key to start</button>
+      <button on:click={onTap}>tap a key to start</button>
     {:else if count == 1}
-      <button on:click={tap} class="accent">keep tapping</button>
-    {:else}<button on:click={tap} class="txt-dim">{count} taps</button>{/if}
+      <button on:click={onTap}>keep tapping</button>
+    {:else}<button on:click={onTap} class="txt-dim">{count} taps</button>{/if}
 
-    <!-- <button on:click={reset} class:txt-dim={!active} class:accent={active}
-      >RESET</button
-    > -->
-
-    <Tapper id="tapInputField" on:tap={tap} bind:value={field} />
+    <Tapper id="tapInputField" on:tap={onTap} bind:value={field} />
+    <button
+      on:click={onReset}
+      class:txt-dim={!active}
+      class:accent={active}
+    >RESET</button>
 
     <hr />
 
