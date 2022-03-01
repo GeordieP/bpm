@@ -91,9 +91,12 @@
   });
 </script>
 
-<div id="tapper-root" class="hStack gap-sm">
-  <canvas bind:this={canvas} width={300} height={100} />
-  <input {id} type="text" on:keydown={onTap} bind:value autofocus />
+<div class="vStack gap-sm">
+  <slot appliedOnTap={onTap} />
+  <div id="tapper-root" class="hStack gap-sm">
+    <canvas bind:this={canvas} width={300} height={100} />
+    <input {id} type="text" on:keydown={onTap} bind:value autofocus />
+  </div>
 </div>
 
 <style>

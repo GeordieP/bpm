@@ -61,13 +61,21 @@
 
 <main>
   <div class="vStack gap-sm">
-    {#if count == 0}
-      <button on:click={onTap}>tap a key to start</button>
-    {:else if count == 1}
-      <button on:click={onTap}>keep tapping</button>
-    {:else}<button on:click={onTap} class="txt-dim">{count} taps</button>{/if}
+    <Tapper
+      id="tapInputField"
+      on:tap={onTap}
+      bind:value={field}
+      let:appliedOnTap
+    >
+      {#if count == 0}
+        <button on:click={appliedOnTap}>tap a key to start</button>
+      {:else if count == 1}
+        <button on:click={appliedOnTap}>keep tapping</button>
+      {:else}
+        <button on:click={appliedOnTap} class="txt-dim">{count} taps</button>
+      {/if}
+    </Tapper>
 
-    <Tapper id="tapInputField" on:tap={onTap} bind:value={field} />
     <button
       on:click={onReset}
       class:txt-dim={!active}
