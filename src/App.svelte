@@ -23,6 +23,8 @@
   let count = 0;
   let first = 0;
   let bpm = fmtBPM(0);
+  let timeoutId;
+
 
   // REACTIVE STATE
   $: active = count >= 2;
@@ -53,6 +55,12 @@
 
     field = "";
     count++;
+
+    // ⏰ Resets tap count after 5 seconds
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(onReset, 5000);
   };
 
   // LIFECYCLE
