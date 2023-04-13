@@ -102,7 +102,8 @@
   <slot appliedOnTap={onTap} />
   <div id="tapper-root" class="hStack gap-sm">
     <canvas bind:this={canvas} width={300} height={100} />
-    <input {id} type="text" on:keydown={onTap} bind:value autofocus />
+    <!-- `on:keyup` seems to give better bpm measurements, as long as the counting process is started correctly -->
+    <input {id} type="text" on:keyup={onTap} bind:value autofocus />
   </div>
 </div>
 

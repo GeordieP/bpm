@@ -50,6 +50,12 @@
       return;
     }
 
+    // TODO: ISSUE: problem with using `on:keyup` instead of `on:keydown` in component;
+    // hitting ctrl+r registers a keyup event when you release it, setting the first timestamp;
+    // ideally, reloading the page would not start the bpm counting
+    //
+    // we could change the skip logic here, but that might make the experience weird for anyone using the reset button or clicking the refresh page button
+
     const tmp = (ONE_MINUTE_MS * count) / (now - first);
     bpm = fmtBPM(tmp);
 
